@@ -243,8 +243,6 @@ def profile(user_id):
 
     return render_template('/users/edit.html', user=user, form=form)
 
-    # IMPLEMENT THIS
-
 
 @app.route('/users/delete', methods=["POST"])
 def delete_user():
@@ -324,8 +322,12 @@ def homepage():
     """
 
     if g.user:
+
+        users_followed = [f_user.id for f_user in g.user.following]
+
         messages = (Message
                     .query
+                    .filter((Message.user_id==g.user.id) | (Message.user_id.in_(users_followed)))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
