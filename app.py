@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 
 CURR_USER_KEY = "curr_user"
 
@@ -210,7 +210,38 @@ def stop_following(follow_id):
 
     return redirect(f"/users/{g.user.id}/following")
 
+@app.route('/users/add_like/<int:msg_id>', methods=['POST'])
+def toggle_like_message(msg_id):
+    """ Add or remove 'like' from message """
 
+    msg = Likes.query.filter(Likes.message_id==msg_id).first()
+
+    # if message is already liked, unlike
+    if msg:
+        db.session.delete(msg)
+    # if message not liked already, create a new like
+    else:
+        new_like = Likes(message_id=msg_id, user_id=g.user.id)
+        db.session.add(new_like)
+
+    db.session.commit()
+
+    return redirect('/')
+
+@app.route('/users/<int:user_id>/likes')
+def users_likes(user_id):
+    """ Show list of liked messages for this user """
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    
+
+    return render_template('users/show.html', user=user, messages=user.likes)
+
+    
 @app.route('/users/<int:user_id>/profile', methods=["GET", "POST"])
 def profile(user_id):
     """ Update profile for current user """
@@ -320,9 +351,7 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-
     if g.user:
-
         users_followed = [f_user.id for f_user in g.user.following]
 
         messages = (Message
