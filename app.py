@@ -25,31 +25,23 @@ toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
-
 ##############################################################################
 # User signup/login/logout
-
 
 @app.before_request
 def add_user_to_g():
     """ If we're logged in, add curr user to Flask global """
-
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
-
     else:
         g.user = None
 
-
 def do_login(user):
     """ Log in user """
-
     session[CURR_USER_KEY] = user.id
-
 
 def do_logout():
     """ Logout user """
-
     if CURR_USER_KEY in session:
         session.pop(CURR_USER_KEY)
         flash('Logout successful', 'success')
@@ -58,11 +50,8 @@ def do_logout():
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
     """Handle user signup.
-
     Create new user and add to DB. Redirect to home page.
-
     If form not valid, present form.
-
     If the there already is a user with that username: flash message
     and re-present form.
     """
@@ -90,7 +79,6 @@ def signup():
     else:
         return render_template('users/signup.html', form=form)
 
-
 @app.route('/login', methods=["GET", "POST"])
 def login():
     """Handle user login."""
@@ -109,7 +97,6 @@ def login():
         flash("Invalid credentials.", 'danger')
 
     return render_template('users/login.html', form=form)
-
 
 @app.route('/logout')
 def logout():
@@ -160,7 +147,6 @@ def users_show(user_id):
 @app.route('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""
-
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -172,7 +158,6 @@ def show_following(user_id):
 @app.route('/users/<int:user_id>/followers')
 def users_followers(user_id):
     """Show list of followers of this user."""
-
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -184,7 +169,6 @@ def users_followers(user_id):
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
 def add_follow(follow_id):
     """Add a follow for the currently-logged-in user."""
-
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -199,7 +183,6 @@ def add_follow(follow_id):
 @app.route('/users/stop-following/<int:follow_id>', methods=['POST'])
 def stop_following(follow_id):
     """Have currently-logged-in-user stop following this user."""
-
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -212,8 +195,7 @@ def stop_following(follow_id):
 
 @app.route('/users/add_like/<int:msg_id>', methods=['POST'])
 def toggle_like_message(msg_id):
-    """ Add or remove 'like' from message """
-
+    """ Add or remove 'like' from likes table """
     msg = Likes.query.filter(Likes.message_id==msg_id).first()
 
     # if message is already liked, unlike
@@ -231,21 +213,18 @@ def toggle_like_message(msg_id):
 @app.route('/users/<int:user_id>/likes')
 def users_likes(user_id):
     """ Show list of liked messages for this user """
-
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
     
-
     return render_template('users/show.html', user=user, messages=user.likes)
 
     
 @app.route('/users/<int:user_id>/profile', methods=["GET", "POST"])
 def profile(user_id):
     """ Update profile for current user """
-
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -289,7 +268,6 @@ def delete_user():
     db.session.commit()
 
     return redirect("/signup")
-
 
 ##############################################################################
 # Messages routes:
@@ -339,10 +317,8 @@ def messages_destroy(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
-
 ##############################################################################
 # Homepage and error pages
-
 
 @app.route('/')
 def homepage():
